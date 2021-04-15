@@ -5,12 +5,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Pitako.Identity.Api.Data;
+using Pitako.Identity.Api.Extensions;
 
 namespace Pitako.Identity.Api
 {
@@ -25,6 +29,14 @@ namespace Pitako.Identity.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<DataContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("connectionString")));
+
+            services.AddDefaultIdentity<IdentityUser>()
+                .AddRoles<IdentityRole>()
+                .AddErrorDescriber<IdentityMensagensPortugues>()
+                .AddEntityFrameworkStores<DataContext>()
+                .AddDefaultTokenProviders();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -46,6 +58,7 @@ namespace Pitako.Identity.Api
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
